@@ -1,0 +1,23 @@
+#pragma once
+
+enum vague_token_t {
+	WORD,
+	NUM,
+	SYM,
+};
+
+enum token_t {
+	INSTRUCTION,
+	IDENTIFIER,
+
+	LOCAL_LABEL,
+	GLOBAL_LABEL,
+
+	ADD_OP,
+	SUB_OP,
+
+	HEXADECIMAL_LITERAL,
+	INTEGER_LITERAL,
+	CHAR_LITERAL,
+	STRING_LITERAL,
+};
