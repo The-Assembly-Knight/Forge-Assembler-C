@@ -35,7 +35,7 @@ struct file_buf *read_input_file(Arena *arena, const char *path)
 	FILE *f = fopen(path, "rb");
 	if (!f) handle_error("File could not be opened", FATAL);
 
-	const size_t f_size = get_file_size(f) - 1;
+	const size_t f_size = get_file_size(f);
 	if (f_size == 0) handle_error("File is empty", WARNING);
 	
 	struct file_buf *file_buf = alloc_or_fatal(arena, sizeof(*file_buf));

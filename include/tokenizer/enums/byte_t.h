@@ -1,0 +1,13 @@
+#pragma once
+
+enum byte_gp {
+	INVALID_B,
+	REGULAR_B,
+	DELIMITER_B,
+	STANDALONE_B,
+	NEW_LINE_B,
+	EOF_B,
+	SINGLE_QUOTE_B,
+	DOUBLE_QUOTE_B,
+	COMMENT_B,
+};
