@@ -92,8 +92,8 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 		clean_token(token);
 	}
 
-	char b = f_buf->buf[f_buf->offset];
-	enum byte_gp b_gp = get_byte_group(b);
+	char b = 0;
+	enum byte_gp b_gp = 0;
 	bool tok_end = false;
 	
 	do {
