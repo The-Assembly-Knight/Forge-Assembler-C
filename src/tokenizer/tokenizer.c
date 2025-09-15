@@ -87,7 +87,7 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 	if (!f_buf) handle_error("The pointer to the file buffer provided to tokenize_next_line func is a null pointer", FATAL);
 
 	if (!token) {
-		token = tiltyard_calloc(arena, sizeof(struct token_line));
+		token = tiltyard_calloc(arena, sizeof(struct token));
 	} else {
 		clean_token(token);
 	}
