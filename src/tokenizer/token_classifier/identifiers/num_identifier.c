@@ -59,7 +59,7 @@ static bool is_num_int(const char *buf, const size_t tok_start, const size_t tok
 	if (current_b == '0') return false;
 
 
-	while (offset <= tok_len - 1) {
+	while (offset < tok_len - 1) {
 		offset++;
 		current_b = buf[tok_start + offset];
 		if (!isdigit(current_b)) return false;
