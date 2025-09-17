@@ -1,9 +1,11 @@
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "../../include/tokenizer/header/tokenizer.h"
 #include "../../include/error/handle_error.h"
 #include "../../include/tokenizer/enums/byte_t.h"
 #include "../../include/tokenizer/table/b_gp.h"
+#include "../../include/tokenizer/structs/scope.h"
 
 static void clean_token(struct token *token)
 {
@@ -69,7 +71,39 @@ static void handle_delimiter_byte(struct file_buf *f_buf, struct token *token, b
 	} while (current_b_gp == DELIMITER_B);
 }
 
-static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct token *token, bool *tok_end)
+static void handle_scope_byte(struct file_buf *f_buf, struct token *token, bool *tok_end, struct scope *scope, enum scope_t scope_t)
+{
+	if (!f_buf || !token || !tok_end || !scope)
+		handle_error("One of the pointers passed to handle_scope_byte is null", FATAL);
+	
+	if (token->len > 0 && scope->active == false) {
+		*tok_end = true;
+		return;
+	}
+	
+	if (token->len == 0) {
+		scope->active = true;
+		scope->type = scope_t;
+		increase_token_length(token);
+		advance_file_buffer_offset(f_buf);
+		return;
+	}
+
+	if (scope->type == scope_t && scope->continuous_back_slash_count % 2 == 0) {
+		scope->type = NO_SCOPE;
+		scope->active = false;
+		increase_token_length(token);
+		advance_file_buffer_offset(f_buf);
+		*tok_end = true;
+		return;
+	} else {
+		increase_token_length(token);
+		advance_file_buffer_offset(f_buf);
+		return;
+	}
+}
+
+static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct token *token, bool *tok_end, struct scope *scope)
 {
 	if (!f_buf)
 		handle_error("The pointer to f_buf passed to handle_byte is null", FATAL);
@@ -80,12 +114,33 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 	if (!tok_end)
 		handle_error("The pointer to tok_end passed to handle_byte is null", FATAL);
 
+	if (!scope)
+		handle_error("The pointer to scope passed to handle_byte is null", FATAL);
+	
+	if (scope->active && b_gp != SINGLE_QUOTE_B && b_gp != DOUBLE_QUOTE_B) {
+		if (f_buf->buf[f_buf->offset] == '\\') {
+			scope->continuous_back_slash_count++;
+		} else {
+			scope->continuous_back_slash_count = 0;
+		}
+		
+		increase_token_length(token);
+		advance_file_buffer_offset(f_buf);
+		return;
+	}
+	
 	switch (b_gp) {
 	case REGULAR_B:
 		handle_regular_byte(f_buf, token);
 		return;
 	case DELIMITER_B:
 		handle_delimiter_byte(f_buf, token, tok_end);
+		return;
+	case SINGLE_QUOTE_B:
+		handle_scope_byte(f_buf, token, tok_end, scope, SINGLE_QUOTE_SCOPE);
+		return;
+	case DOUBLE_QUOTE_B:
+		handle_scope_byte(f_buf, token, tok_end, scope, DOUBLE_QUOTE_SCOPE);
 		return;
 	default:
 		return;
@@ -106,16 +161,16 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 	char b = 0;
 	enum byte_gp b_gp = 0;
 	bool tok_end = false;
-	
+	struct scope scope = { .type = NO_SCOPE, .active = false, };
+
 	do {
 		if (f_buf->offset > f_buf->len)
 			handle_error("Overflow of f_buf in get_next_token", FATAL);
+
 		b = f_buf->buf[f_buf->offset];
 		b_gp = get_byte_group(b);
-
-		handle_byte(b_gp, f_buf, token, &tok_end);
-	} while (!tok_end && b_gp != EOF_B && f_buf->offset >= f_buf->len);
+		handle_byte(b_gp, f_buf, token, &tok_end, &scope);
+	} while (!tok_end && b_gp != EOF_B && f_buf->offset < f_buf->len);
 
 	return token;
 }
-
