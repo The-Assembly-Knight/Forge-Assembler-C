@@ -20,10 +20,21 @@ static void advance_file_buffer_offset(struct file_buf *f_buf)
 	if (!f_buf)
 		handle_error("The pointer to f_buf passed to advance_file_buffer_offset is null", FATAL);
 
-	if (f_buf->offset == f_buf->len)
+	if (f_buf->offset >= f_buf->len - 1)
 		handle_error("Overflow of f_buf in advance_file_buffer_offset", FATAL);
 
 	f_buf->offset++;
+}
+
+static void increase_token_length(struct token *tok)
+{
+	if (!tok)
+		handle_error("The pointer to tok passed to increase_token_length is null", FATAL);
+
+	if (tok->len >= MAX_TOKEN_LEN)
+		handle_error("The length of the token is greater than MAX_TOKEN_LENGTH", FATAL);
+
+	tok->len++;
 }
 
 static enum byte_gp get_byte_group(const char b)
@@ -40,7 +51,7 @@ static void handle_regular_byte(struct file_buf *f_buf, struct token *token)
 	
 	if (token->len == 0) token->start_off = f_buf->offset;
 
-	token->len++;
+	increase_token_length(token);
 	token->last_b_gp = REGULAR_B;
 	advance_file_buffer_offset(f_buf);
 }
@@ -97,11 +108,13 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 	bool tok_end = false;
 	
 	do {
+		if (f_buf->offset > f_buf->len)
+			handle_error("Overflow of f_buf in get_next_token", FATAL);
 		b = f_buf->buf[f_buf->offset];
 		b_gp = get_byte_group(b);
 
 		handle_byte(b_gp, f_buf, token, &tok_end);
-	} while (!tok_end &&  b_gp != EOF_B);
+	} while (!tok_end && b_gp != EOF_B && f_buf->offset >= f_buf->len);
 
 	return token;
 }

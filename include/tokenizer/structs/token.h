@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include "../enums/byte_t.h"
 
+#define MAX_TOKEN_LEN 200
+
 struct token {
 	size_t start_off;
 	size_t len;
