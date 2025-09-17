@@ -1,11 +1,11 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "../../include/tokenizer/header/tokenizer.h"
 #include "../../include/error/handle_error.h"
 #include "../../include/tokenizer/enums/byte_t.h"
 #include "../../include/tokenizer/table/b_gp.h"
 #include "../../include/tokenizer/structs/scope.h"
+#include "../../include/tokenizer/header/classifier.h"
 
 static void clean_token(struct token *token)
 {
@@ -13,6 +13,7 @@ static void clean_token(struct token *token)
 	.start_off = 0,
 	.len = 0,
 	.last_b_gp = 0,
+	.type = 0,
 	};
 	*token = clean_tok;
 }
@@ -171,6 +172,8 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 		b_gp = get_byte_group(b);
 		handle_byte(b_gp, f_buf, token, &tok_end, &scope);
 	} while (!tok_end && b_gp != EOF_B && f_buf->offset < f_buf->len);
+
+	if (tok_end) token->type = get_token_type(f_buf, token);
 
 	return token;
 }

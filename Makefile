@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow \
 -Wstrict-prototypes -Werror -g -O2 -std=gnu99
 
 # Source and object files
-SRC = main.c libs/tiltyard/src/tiltyard_API.c libs/tiltyard/src/tiltyard_Error.c src/error/handle_error.c src/fileio/input/file_i.c src/tokenizer/tokenizer.c src/tokenizer/b_gp.c
+SRC = main.c libs/tiltyard/src/tiltyard_API.c libs/tiltyard/src/tiltyard_Error.c src/error/handle_error.c src/fileio/input/file_i.c src/tokenizer/tokenizer.c src/tokenizer/b_gp.c src/tokenizer/classifier.c src/tokenizer/token_classifier/identifiers/num_identifier.c
 OBJ = $(SRC:.c=.o)
 TARGET = fas
 

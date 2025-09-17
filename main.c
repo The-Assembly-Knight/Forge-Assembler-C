@@ -20,8 +20,10 @@ int main(int argc, char *argv[])
 
 	token = get_next_token(arena, file_buf, token);
 	printf("Token len is: %zu\n", token->len);
+	printf("Token type is: %i\n", token->type);
 	token = get_next_token(arena, file_buf, token);
 	printf("Token len is: %zu\n", token->len);
+	printf("Token type is: %i\n", token->type);
 
 
 	return 0;

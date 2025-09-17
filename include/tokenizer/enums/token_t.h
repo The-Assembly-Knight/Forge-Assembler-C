@@ -7,6 +7,8 @@ enum vague_token_t {
 };
 
 enum token_t {
+	UNKNOWN,
+
 	INSTRUCTION,
 	IDENTIFIER,
 
@@ -20,4 +22,6 @@ enum token_t {
 	INTEGER_LITERAL,
 	CHAR_LITERAL,
 	STRING_LITERAL,
+
+	INVALID,
 };
