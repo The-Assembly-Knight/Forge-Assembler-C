@@ -10,18 +10,9 @@
 
 static bool is_hex_digit(const char b)
 {
-	static const char HEX_DIGITS[HEX_DIGITS_AMOUNT] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'a', 'b', 'c', 'd', 'e', 'f',
-	'A', 'B', 'C', 'D', 'E', 'F',
-	};
-
-	size_t i = 0;
-	for (i = 0; i < HEX_DIGITS_AMOUNT; i++) {
-		if (b == HEX_DIGITS[i]) return true;
-	}
-
-	return false;
+	return	(b >= '0' && b <= '9') ||
+		(b >= 'a' && b <= 'f') ||
+		(b >= 'A' && b <= 'F');
 }
 
 static bool is_num_hex(const char *buf, const size_t tok_start, const size_t tok_len)
