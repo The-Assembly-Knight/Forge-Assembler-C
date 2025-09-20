@@ -96,6 +96,7 @@ static void handle_scope_byte(struct file_buf *f_buf, struct token *token, bool 
 	}
 	
 	if (token->len == 0) {
+		token->start_off = f_buf->offset;
 		scope->active = true;
 		scope->type = scope_t;
 		increase_token_length(token);
@@ -211,7 +212,7 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 		b_gp = get_byte_group(b);
 		handle_byte(b_gp, f_buf, token, &tok_end, &scope);
 	} while (!tok_end && b_gp != EOF_B && b_gp != NEW_LINE_B && f_buf->offset < f_buf->len);
-
+	
 	if (tok_end) token->type = get_token_type(f_buf, token);
 
 	return token;

@@ -1,2 +1,2 @@
 ADD 0XABC, RAX ; test
-ADD
+MOV "Test string", RBX
