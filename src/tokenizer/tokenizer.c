@@ -72,6 +72,19 @@ static void handle_delimiter_byte(struct file_buf *f_buf, struct token *token, b
 	} while (current_b_gp == DELIMITER_B);
 }
 
+static void handle_standalone_byte(struct file_buf *f_buf, struct token *token, bool *tok_end)
+{
+	if (token->len > 0) {
+		*tok_end = true;
+		return;
+	}
+
+	token->start_off = f_buf->offset;
+	increase_token_length(token);
+	advance_file_buffer_offset(f_buf);
+	*tok_end = true;
+}
+
 static void handle_scope_byte(struct file_buf *f_buf, struct token *token, bool *tok_end, struct scope *scope, enum scope_t scope_t)
 {
 	if (!f_buf || !token || !tok_end || !scope)
@@ -137,6 +150,9 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 	case DELIMITER_B:
 		handle_delimiter_byte(f_buf, token, tok_end);
 		return;
+	case STANDALONE_B:
+		handle_standalone_byte(f_buf, token, tok_end);
+		return;
 	case SINGLE_QUOTE_B:
 		handle_scope_byte(f_buf, token, tok_end, scope, SINGLE_QUOTE_SCOPE);
 		return;
@@ -144,6 +160,7 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 		handle_scope_byte(f_buf, token, tok_end, scope, DOUBLE_QUOTE_SCOPE);
 		return;
 	default:
+		handle_error("A byte type not supported was found in handle_byte", WARNING);
 		return;
 	}
 }
