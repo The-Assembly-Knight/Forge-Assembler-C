@@ -117,6 +117,23 @@ static void handle_scope_byte(struct file_buf *f_buf, struct token *token, bool 
 	}
 }
 
+static void handle_comment_byte(struct file_buf *f_buf, struct token *token, bool *tok_end)
+{
+	if (token->len != 0) {
+		*tok_end = true;
+		return;
+	}
+	
+	enum byte_gp current_b_gp = COMMENT_B;
+
+
+
+	do {
+		advance_file_buffer_offset(f_buf);
+		current_b_gp = get_byte_group(f_buf->buf[f_buf->offset]);
+	} while (current_b_gp != NEW_LINE_B && current_b_gp != EOF_B);
+}
+
 static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct token *token, bool *tok_end, struct scope *scope)
 {
 	if (!f_buf)
@@ -159,6 +176,9 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 		return;
 	case DOUBLE_QUOTE_B:
 		handle_scope_byte(f_buf, token, tok_end, scope, DOUBLE_QUOTE_SCOPE);
+		return;
+	case COMMENT_B:
+		handle_comment_byte(f_buf, token, tok_end);
 		return;
 	case EOF_B: return;
 	default:
