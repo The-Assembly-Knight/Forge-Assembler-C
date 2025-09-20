@@ -23,7 +23,7 @@ static void advance_file_buffer_offset(struct file_buf *f_buf)
 	if (!f_buf)
 		handle_error("The pointer to f_buf passed to advance_file_buffer_offset is null", FATAL);
 
-	if (f_buf->offset >= f_buf->len - 1)
+	if (f_buf->offset > f_buf->len - 1)
 		handle_error("Overflow of f_buf in advance_file_buffer_offset", FATAL);
 
 	f_buf->offset++;
@@ -151,6 +151,7 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 		handle_delimiter_byte(f_buf, token, tok_end);
 		return;
 	case STANDALONE_B:
+	case NEW_LINE_B:
 		handle_standalone_byte(f_buf, token, tok_end);
 		return;
 	case SINGLE_QUOTE_B:
@@ -159,6 +160,7 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 	case DOUBLE_QUOTE_B:
 		handle_scope_byte(f_buf, token, tok_end, scope, DOUBLE_QUOTE_SCOPE);
 		return;
+	case EOF_B: return;
 	default:
 		handle_error("A byte type not supported was found in handle_byte", WARNING);
 		return;
@@ -188,7 +190,7 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 		b = f_buf->buf[f_buf->offset];
 		b_gp = get_byte_group(b);
 		handle_byte(b_gp, f_buf, token, &tok_end, &scope);
-	} while (!tok_end && b_gp != EOF_B && f_buf->offset < f_buf->len);
+	} while (!tok_end && b_gp != EOF_B && b_gp != NEW_LINE_B && f_buf->offset < f_buf->len);
 
 	if (tok_end) token->type = get_token_type(f_buf, token);
 

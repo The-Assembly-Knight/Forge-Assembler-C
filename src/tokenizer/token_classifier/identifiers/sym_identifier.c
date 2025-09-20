@@ -12,6 +12,7 @@ enum token_t identify_sym(struct file_buf *f_buf, struct token *tok)
 	case '.': return LOCAL;
 	case ':': return LABEL_BEG;
 	case ',': return ARG_SEPARATOR;
+	case '\n': return INSTRUCTION_END;
 	}
 
 	return INVALID;
