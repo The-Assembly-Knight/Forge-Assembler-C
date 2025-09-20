@@ -5,9 +5,6 @@
 #include "../../../../include/tokenizer/header/identifiers/num_identifier.h"
 #include "../../../../include/error/handle_error.h"
 
-
-#define HEX_DIGITS_AMOUNT 22
-
 static bool is_hex_digit(const char b)
 {
 	return	(b >= '0' && b <= '9') ||

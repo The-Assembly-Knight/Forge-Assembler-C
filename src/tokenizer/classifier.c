@@ -3,6 +3,7 @@
 #include "../../include/tokenizer/header/classifier.h"
 #include "../../include/error/handle_error.h"
 #include "../../include/tokenizer/header/identifiers/num_identifier.h"
+#include "../../include/tokenizer/header/identifiers/word_identifier.h"
 
 static enum vague_token_t get_vague_token_t(struct file_buf *f_buf, struct token *tok)
 {
@@ -21,7 +22,7 @@ enum token_t get_token_type(struct file_buf *f_buf, struct token *tok)
 	enum vague_token_t vague_t = get_vague_token_t(f_buf, tok);
 	
 	switch (vague_t) {
-	case WORD: return UNKNOWN;
+	case WORD: return identify_word(f_buf, tok);
 	case SYM:  return UNKNOWN;
 	default:   return identify_number(f_buf, tok);
 	}
