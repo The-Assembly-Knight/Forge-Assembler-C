@@ -1,6 +1,6 @@
 #pragma once
 
-enum instruction_t {
+enum mnemonic_t {
 	MOV,
 	PUSH,
 	POP,
