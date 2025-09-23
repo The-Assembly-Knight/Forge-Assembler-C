@@ -59,7 +59,7 @@ const enum byte_gp b_gp_table[ASCII_CHAR_AMOUNT] = {
 	REGULAR_B,
 	REGULAR_B,
 	REGULAR_B,
-	REGULAR_B,
+	STANDALONE_B,
 	COMMENT_B,
 	REGULAR_B,
 	REGULAR_B,
