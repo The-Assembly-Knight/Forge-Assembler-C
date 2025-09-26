@@ -1,2 +1,1 @@
-ADD 0XABC, RAX ; test
-MOV "Test string", RBX
+.local_label:

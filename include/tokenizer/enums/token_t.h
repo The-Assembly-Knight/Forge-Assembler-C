@@ -9,9 +9,44 @@ enum vague_token_t {
 enum token_t {
 	UNKNOWN,		/* 0 */
 
-	INSTRUCTION,		/* 1 */
+	INSTRUCTION_START,	/* 1 */
+	JE = INSTRUCTION_START,
+	MOV,
+	ADD,
+	SUB,
+	JMP,
+	JNE,
+	CMP,
 	INSTRUCTION_END,	/* 2 */
+
+	REGISTER_START,		/* 3 */
+	RAX = REGISTER_START,
+	RCX,
+	RDX,
+	RBX,
+	RSI,
+	RDI,
+	RSP,
+	RBP,
+	R8,
+	R9,
+	R10,
+	R11,
+	R12,
+	R13,
+	R14,
+	R15,
+	REGISTER_END,
+
+	DIRECTIVE_START,
+	STR = DIRECTIVE_START,
+	TEXT,
+	SIZE,
+	DIRECTIVE_END,
+
+	LINE_END,		/* 2 */
 	IDENTIFIER,		/* 3 */
+	REGISTER,		/* 4 */
 
 	LOCAL,			/* 4 */
 	GLOBAL,			/* 5 */
@@ -26,5 +61,6 @@ enum token_t {
 	CHAR_LITERAL,		/* 12 */
 	STRING_LITERAL,		/* 13 */
 
-	INVALID,		/* 14 */
+	DIRECTIVE,
+	INVALID,		/* 15 */
 };

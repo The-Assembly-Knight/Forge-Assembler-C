@@ -2,6 +2,7 @@
 
 #include "nodes/parent_nodes/instruction.h"
 #include "nodes/parent_nodes/directive.h"
+#include "nodes/parent_nodes/label.h"
 #include "../enums/ast/ast_node_t.h"
 
 struct ast_node {
@@ -9,6 +10,7 @@ struct ast_node {
 	union {
 		struct instruction instr;
 		struct directive dir;
+		struct label label;
 	} node;
-	ast_node *next_node;
+	struct ast_node *next_node;
 };

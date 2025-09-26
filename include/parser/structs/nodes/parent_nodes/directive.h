@@ -13,9 +13,8 @@ struct directive {
 		struct lit lit;
 		struct reg reg;
 		struct identifier id;
-	};
+	} args[MAX_DIR_ARG_C];
 	
 	enum dir_t type;
 	enum dir_arg_t args_t[MAX_DIR_ARG_C];
-	union arg args[MAX_DIR_ARG_C];
 };

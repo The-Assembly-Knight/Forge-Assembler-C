@@ -10,14 +10,14 @@
 #define INSTRUCTION_MAX_ARG_C 4
 
 struct instruction {
+	enum op_t operands_t[INSTRUCTION_MAX_ARG_C];
+
 	union operand {
 		struct identifier id;
 		struct reg reg;
-	};
+	} operands[INSTRUCTION_MAX_ARG_C];
 
 	enum mnemonic_t mnemonic;
 	size_t operand_c;
 	
-	enum op_t operands_t[INSTRUCTION_MAX_ARG_C];
-	union operand operands[INSTRUCTION_MAX_ARG_C];
 };

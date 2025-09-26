@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../../enums/register/reg_t.h"
 #include "../../../enums/sizes.h"
+#include "../../../../tokenizer/enums/token_t.h"
 
 struct reg {
-	enum reg_t type;
+	enum token_t type;
 	enum size size;
 };
