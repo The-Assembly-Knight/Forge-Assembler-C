@@ -39,13 +39,14 @@ struct file_buf *read_input_file(Arena *arena, const char *path)
 	if (f_size == 0) handle_error("File is empty", WARNING);
 	
 	struct file_buf *file_buf = alloc_or_fatal(arena, sizeof(*file_buf));
-	file_buf->buf = alloc_or_fatal(arena, f_size);
+	file_buf->buf = alloc_or_fatal(arena, f_size + 1);
 
 	file_buf->offset = 0;
 	file_buf->len = f_size;
 
 	
 	const size_t bytes_read = fread(file_buf->buf, 1, f_size, f);
+	file_buf->buf[f_size] = '\0';
 	if (bytes_read != f_size) handle_error("The file could not be read entirely", FATAL);
 
 	fclose(f);
