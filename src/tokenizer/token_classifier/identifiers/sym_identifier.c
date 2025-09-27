@@ -9,7 +9,6 @@ enum token_t identify_sym(struct file_buf *f_buf, struct token *tok)
 		handle_error("There is a symbol with len > 1", WARNING);
 
 	switch (first_b) {
-	case '.': return LOCAL;
 	case ':': return LABEL_BEG;
 	case ',': return ARG_SEPARATOR;
 	case '"': return STRING_LITERAL;

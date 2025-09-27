@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "../../../../include/tokenizer/header/identifiers/word_identifier.h"
@@ -41,7 +42,7 @@ enum token_t identify_word(struct file_buf *f_buf, struct token *tok)
 		};
 
 	if (tok->len > MAX_KEYWORD_LEN)
-		return IDENTIFIER;
+		return (f_buf->buf[tok->start_off] == '.') ? LOCAL_LABEL : IDENTIFIER;
 
 	if (f_buf->len < tok->start_off + tok->len)
 		handle_error("Token overflows f_buf in identify_word", FATAL);
@@ -54,9 +55,7 @@ enum token_t identify_word(struct file_buf *f_buf, struct token *tok)
 		if (strncmp(f_buf->buf + tok->start_off, keywords[i].word, tok->len) == 0)
 			return keywords[i].type;
 	}
-	
-	if (f_buf->buf[tok->start_off] == '.')
-		return LOCAL_LABEL;
 
+	
 	return IDENTIFIER;
 }
