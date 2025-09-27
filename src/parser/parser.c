@@ -31,6 +31,33 @@ static enum line_t identify_first_tok_t(struct token_iterator *ti)
 {
 	if (!ti)
 		handle_error("token iterator pointer passed to dientify_first_tok_t is NULL", FATAL);
+
+	enum token_t prev_tok_t = UNKNOWN;
+	enum token_t cur_tok_t = ti->cur_tok->type;
+	
+	if (cur_tok_t >= INSTRUCTION_START && cur_tok_t < INSTRUCTION_END) {
+		return INSTRUCTION_LINE;
+	} else if (cur_tok_t >= DIRECTIVE_START && cur_tok_t < DIRECTIVE_END) {
+		return DIRECTIVE_LINE;
+	}
+
+	switch (cur_tok_t) {
+	case LOCAL_LABEL:
+	case IDENTIFIER:
+		prev_tok_t = cur_tok_t;
+		ti->cur_tok = get_next_token(ti->arena, ti->f_buf, ti->cur_tok); /* advance current token */
+		cur_tok_t = ti->cur_tok->type;
+
+		if (cur_tok_t == LABEL_BEG) {
+			return (prev_tok_t == LOCAL_LABEL) ? LOCAL_LABEL_LINE : GLOBAL_LABEL_LINE;
+		} else {
+			return INVALID_LINE;
+		}
+		break;
+	default:
+		return INVALID_LINE;
+	}
+	
 	return UNKNOWN_LINE;
 }
 
