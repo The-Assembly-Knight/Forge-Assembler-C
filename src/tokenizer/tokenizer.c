@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "../../include/tokenizer/header/tokenizer.h"
 #include "../../include/error/handle_error.h"
@@ -24,8 +23,6 @@ static void advance_file_buffer_offset(struct file_buf *f_buf)
 {
 	if (!f_buf)
 		handle_error("The pointer to f_buf passed to advance_file_buffer_offset is null", FATAL);
-
-	printf("DEBUG: char before overflow: %i\n", f_buf->buf[f_buf->offset]);
 
 	if (f_buf->offset > f_buf->len - 1)
 		handle_error("Overflow of f_buf in advance_file_buffer_offset", FATAL);

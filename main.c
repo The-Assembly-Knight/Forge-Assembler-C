@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "include/file_io/header/file_i.h"
 #include "include/error/handle_error.h"
 #include "include/file_io/structs/file_buf.h"
@@ -24,21 +22,6 @@ int main(int argc, char *argv[])
 		handle_error("root_tok is null", WARNING);
 		return 1;
 	}
-
-	printf("this is the len of root_tok: %zu\n", root_tok->len);
-	printf("this is the type of root_tok: %i\n", root_tok->type);
-
-	struct token *cur_tok = root_tok;
-	int tok_c = 0;
-
-	while (1) {
-		tok_c++;
-		cur_tok = cur_tok->next_tok;
-		if (!cur_tok) break;
-	}
-
-	printf("Amount of tok: %i\n", tok_c);
-	
 
 	return 0;
 }
