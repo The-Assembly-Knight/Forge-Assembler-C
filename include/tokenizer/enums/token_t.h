@@ -48,8 +48,8 @@ enum token_t {
 	IDENTIFIER,		/* 3 */
 	REGISTER,		/* 4 */
 
-	LOCAL,			/* 4 */
-	GLOBAL,			/* 5 */
+	LOCAL_LABEL,		/* 4 */
+	GLOBAL_LABEL,		/* 5 */
 	LABEL_BEG,		/* 6 */
 	ARG_SEPARATOR,		/* 7 */
 

@@ -35,9 +35,9 @@ enum token_t identify_word(struct file_buf *f_buf, struct token *tok)
 			{.word = "R13", .len = 3, .type = R13},
 			{.word = "R14", .len = 3, .type = R14},
 			{.word = "R15", .len = 3, .type = R15},
-			{.word = "STR",	.len = 3, .type = STR},
-			{.word = "SIZE", .len = 4, .type = SIZE},
-			{.word = "TEXT", .len = 4, .type = TEXT},
+			{.word = ".STR",.len = 3, .type = STR},
+			{.word = ".SIZE", .len = 4, .type = SIZE},
+			{.word = ".TEXT", .len = 4, .type = TEXT},
 		};
 
 	if (tok->len > MAX_KEYWORD_LEN)
@@ -54,6 +54,9 @@ enum token_t identify_word(struct file_buf *f_buf, struct token *tok)
 		if (strncmp(f_buf->buf + tok->start_off, keywords[i].word, tok->len) == 0)
 			return keywords[i].type;
 	}
+	
+	if (f_buf->buf[tok->start_off] == '.')
+		return LOCAL_LABEL;
 
-      return IDENTIFIER;
+	return IDENTIFIER;
 }
