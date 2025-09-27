@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "../../include/parser/header/parser.h"
 #include "../../include/error/handle_error.h"
@@ -21,24 +20,28 @@ enum line_t {
 	INVALID_LINE,
 };
 
-static void it_init(struct token_iterator *ti, Arena *arena, struct file_buf *f_buf)
+static void ti_init(struct token_iterator *ti, Arena *arena, struct file_buf *f_buf)
 {
 	ti->arena = arena;
 	ti->f_buf = f_buf;
 	ti->cur_tok = NULL;
 }
 
-static enum line_t identify_first_tok_t(struct token_iterator *it)
+static enum line_t identify_first_tok_t(struct token_iterator *ti)
 {
+	if (!ti)
+		handle_error("token iterator pointer passed to dientify_first_tok_t is NULL", FATAL);
 	return UNKNOWN_LINE;
 }
 
-static struct ast_node *parse_line(struct token_iterator *it)
+static struct ast_node *parse_line(struct token_iterator *ti)
 {
-	if (!it || !it->arena || !it->f_buf || !it->cur_tok)
+	struct ast_node *cur_node = tiltyard_calloc(ti->arena, sizeof(*cur_node));
+
+	if (!ti || !ti->arena || !ti->f_buf || !ti->cur_tok)
 		handle_error("One of the pointers passed to parse_line in parser.c is NULL", FATAL);
 	
-	const enum line_t line_t = identify_first_tok_t(it);
+	const enum line_t line_t = identify_first_tok_t(ti);
 
 	switch (line_t) {
 	case INSTRUCTION_LINE:
@@ -50,10 +53,9 @@ static struct ast_node *parse_line(struct token_iterator *it)
 	case DIRECTIVE_LINE:
 		return NULL;		/* Call parse_directive_line */
 	default:
-		handle_error("An invalid or unknown type of line was found in parse_line func", FATAL);
+		handle_error("An invalid or unknown type of line was found in parse_line func", WARNING);
+		return NULL;
 	};
-
-	return NULL;
 }
 
 struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf)
@@ -62,18 +64,20 @@ struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf)
 		handle_error("pointers passed to parse_program are NULL", FATAL);
 	
 	struct ast_node *root_node = NULL;
-	struct ast_node *cur_node = NULL;
+	struct ast_node **tail_node = &root_node;
 
-	struct token_iterator it;
-	it_init(&it, arena, f_buf);
-	it.cur_tok = get_next_token(it.arena, it.f_buf, it.cur_tok);
+	struct token_iterator ti;
+	ti_init(&ti, arena, f_buf);
+	ti.cur_tok = get_next_token(ti.arena, ti.f_buf, ti.cur_tok);
 
-	if (root_node == NULL) {
-		root_node = parse_line(&it);
-		cur_node = root_node;
-	} else {
-		cur_node = cur_node->next_node;
+	while (1) {
+		struct ast_node *node = parse_line(&ti);
+
+		if (!node) break;
+
+		*tail_node = node;
+		tail_node = &node->next_node;
 	}
-		
-	return NULL;
+
+	return root_node;
 }
