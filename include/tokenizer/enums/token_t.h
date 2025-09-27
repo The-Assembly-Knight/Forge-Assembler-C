@@ -17,9 +17,9 @@ enum token_t {
 	JMP,
 	JNE,
 	CMP,
-	INSTRUCTION_END,	/* 2 */
+	INSTRUCTION_END,	/* 8 */
 
-	REGISTER_START,		/* 3 */
+	REGISTER_START,		/* 9 */
 	RAX = REGISTER_START,
 	RCX,
 	RDX,
@@ -36,31 +36,32 @@ enum token_t {
 	R13,
 	R14,
 	R15,
-	REGISTER_END,
+	REGISTER_END,		/* 25 */
 
-	DIRECTIVE_START,
+	DIRECTIVE_START,	/* 26 */
 	STR = DIRECTIVE_START,
 	TEXT,
 	SIZE,
-	DIRECTIVE_END,
+	DIRECTIVE_END,		/* 29 */
 
-	LINE_END,		/* 2 */
-	IDENTIFIER,		/* 3 */
-	REGISTER,		/* 4 */
+	LINE_END,		/* 30 */
 
-	LOCAL_LABEL,		/* 4 */
-	GLOBAL_LABEL,		/* 5 */
-	LABEL_BEG,		/* 6 */
-	ARG_SEPARATOR,		/* 7 */
+	LOCAL_LABEL,		/* 31 */
+	GLOBAL_LABEL,		/* 32 */
+	LABEL_BEG,		/* 33 */
+	ARG_SEPARATOR,		/* 34 */
 
-	ADD_OP,			/* 8 */
-	SUB_OP,			/* 9 */
+	BIN_OP_START,		/* 35 */
+	ADD_OP = BIN_OP_START,
+	SUB_OP,
+	BIN_OP_END,		/* 37 */
 
-	HEXADECIMAL_LITERAL,	/* 10 */
-	INTEGER_LITERAL,	/* 11 */
-	CHAR_LITERAL,		/* 12 */
-	STRING_LITERAL,		/* 13 */
+	HEXADECIMAL_LITERAL,	/* 38 */
+	INTEGER_LITERAL,	/* 39 */
+	CHAR_LITERAL,		/* 40 */
+	STRING_LITERAL,		/* 41 */
 
-	DIRECTIVE,
-	INVALID,		/* 15 */
+	IDENTIFIER,		/* 42 */
+
+	INVALID,		/* 43 */
 };
