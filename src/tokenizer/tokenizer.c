@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "../../include/tokenizer/header/tokenizer.h"
 #include "../../include/error/handle_error.h"
@@ -10,6 +11,7 @@
 static void clean_token(struct token *token)
 {
 	static struct token clean_tok = {
+	.next_tok = NULL,
 	.start_off = 0,
 	.len = 0,
 	.last_b_gp = 0,
@@ -22,6 +24,8 @@ static void advance_file_buffer_offset(struct file_buf *f_buf)
 {
 	if (!f_buf)
 		handle_error("The pointer to f_buf passed to advance_file_buffer_offset is null", FATAL);
+
+	printf("DEBUG: char before overflow: %i\n", f_buf->buf[f_buf->offset]);
 
 	if (f_buf->offset > f_buf->len - 1)
 		handle_error("Overflow of f_buf in advance_file_buffer_offset", FATAL);
@@ -188,16 +192,13 @@ static void handle_byte(const enum byte_gp b_gp, struct file_buf *f_buf, struct 
 	}
 }
 
-struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token *token)
+static struct token *get_next_token(Arena *arena, struct file_buf *f_buf)
 {
 	if (!arena) handle_error("The pointer to the arena provided to tokenize_next_line func is null", FATAL);
 	if (!f_buf) handle_error("The pointer to the file buffer provided to tokenize_next_line func is a null pointer", FATAL);
-
-	if (!token) {
-		token = tiltyard_calloc(arena, sizeof(struct token));
-	} else {
-		clean_token(token);
-	}
+	
+	struct token *tok = tiltyard_calloc(arena, sizeof(*tok));
+	clean_token(tok);
 
 	char b = 0;
 	enum byte_gp b_gp = 0;
@@ -210,10 +211,32 @@ struct token *get_next_token(Arena *arena, struct file_buf *f_buf, struct token 
 
 		b = f_buf->buf[f_buf->offset];
 		b_gp = get_byte_group(b);
-		handle_byte(b_gp, f_buf, token, &tok_end, &scope);
+		handle_byte(b_gp, f_buf, tok, &tok_end, &scope);
 	} while (!tok_end && b_gp != EOF_B && b_gp != NEW_LINE_B && f_buf->offset < f_buf->len);
 	
-	if (tok_end) token->type = get_token_type(f_buf, token);
+	if (tok_end) {
+		tok->type = get_token_type(f_buf, tok);
+		return tok;
+	}
 
-	return token;
+	return NULL;
+}
+
+struct token *tokenize_file(Arena *arena, struct file_buf *f_buf)
+{
+	if (!arena) handle_error("The pointer to the arena provided to tokenize_file func is null", FATAL);
+	if (!f_buf) handle_error("The pointer to the file buffer provided to tokenize_file func is a null pointer", FATAL);
+
+	struct token *root_tok = NULL;
+	struct token **tail_tok = &root_tok;
+
+	while (1) {
+		struct token *cur_tok = get_next_token(arena, f_buf);
+		if (!cur_tok) break;
+	
+		*tail_tok = cur_tok;
+		tail_tok = &cur_tok->next_tok;
+	}
+
+	return root_tok;
 }
