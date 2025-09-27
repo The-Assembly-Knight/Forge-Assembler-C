@@ -14,7 +14,7 @@ static enum vague_token_t get_vague_token_t(struct file_buf *f_buf, struct token
 	const char first_b = f_buf->buf[tok->start_off];
 
 	if (isdigit(first_b)) return NUM;
-	if (isalpha(first_b)) return WORD;
+	if (isalpha(first_b) || first_b == '.') return WORD;
 	return SYM;
 }
 
