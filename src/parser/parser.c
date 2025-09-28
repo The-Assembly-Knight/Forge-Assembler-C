@@ -1,9 +1,9 @@
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "../../include/parser/header/parser.h"
 #include "../../include/error/handle_error.h"
-#include "../../include/tokenizer/header/tokenizer.h"
-#include "../../include/parser/header/token_type_checker.h"
+#include "../../include/parser/header/line_type_identifier.h"
 
 struct token_iterator {
 	Arena *arena;
@@ -20,6 +20,14 @@ enum line_t {
 	INVALID_LINE,
 };
 
+static struct token *peek_next_token(struct token *tok)
+{
+	if (!tok)
+		handle_error("tok pointer passed to peek_next_token is NULL", FATAL);
+	
+	return tok->next_tok;
+}
+
 static void ti_init(struct token_iterator *ti, Arena *arena, struct file_buf *f_buf)
 {
 	ti->arena = arena;
@@ -27,36 +35,26 @@ static void ti_init(struct token_iterator *ti, Arena *arena, struct file_buf *f_
 	ti->cur_tok = NULL;
 }
 
-static enum line_t identify_first_tok_t(struct token_iterator *ti)
+static enum line_t identify_line_t(struct token_iterator *ti)
 {
 	if (!ti)
 		handle_error("token iterator pointer passed to dientify_first_tok_t is NULL", FATAL);
-
-	enum token_t prev_tok_t = UNKNOWN;
-	enum token_t cur_tok_t = ti->cur_tok->type;
 	
-	if (cur_tok_t >= INSTRUCTION_START && cur_tok_t < INSTRUCTION_END) {
+	struct token *cur_tok = ti->cur_tok;
+	struct token *next_tok = peek_next_token(cur_tok);
+
+	const enum token_t cur_tok_t = cur_tok->type;
+	const enum token_t next_tok_t = (next_tok) ? next_tok->type : UNKNOWN;
+
+
+	if (is_line_instruction(cur_tok_t))
 		return INSTRUCTION_LINE;
-	} else if (cur_tok_t >= DIRECTIVE_START && cur_tok_t < DIRECTIVE_END) {
+	else if (is_line_directive(cur_tok_t))
 		return DIRECTIVE_LINE;
-	}
-
-	switch (cur_tok_t) {
-	case LOCAL_LABEL:
-	case IDENTIFIER:
-		prev_tok_t = cur_tok_t;
-		ti->cur_tok = get_next_token(ti->arena, ti->f_buf, ti->cur_tok); /* advance current token */
-		cur_tok_t = ti->cur_tok->type;
-
-		if (cur_tok_t == LABEL_BEG) {
-			return (prev_tok_t == LOCAL_LABEL) ? LOCAL_LABEL_LINE : GLOBAL_LABEL_LINE;
-		} else {
-			return INVALID_LINE;
-		}
-		break;
-	default:
-		return INVALID_LINE;
-	}
+	else if (is_line_local_label(cur_tok_t, next_tok_t))
+		return LOCAL_LABEL_LINE;
+	else if (is_line_global_label(cur_tok_t, next_tok_t))
+		return GLOBAL_LABEL_LINE;
 	
 	return UNKNOWN_LINE;
 }
@@ -68,16 +66,20 @@ static struct ast_node *parse_line(struct token_iterator *ti)
 	if (!ti || !ti->arena || !ti->f_buf || !ti->cur_tok)
 		handle_error("One of the pointers passed to parse_line in parser.c is NULL", FATAL);
 	
-	const enum line_t line_t = identify_first_tok_t(ti);
+	const enum line_t line_t = identify_line_t(ti);
 
 	switch (line_t) {
 	case INSTRUCTION_LINE:
+		printf("line is an instruction\n");
 		return NULL;		/* Call parse_instruction_line */
 	case LOCAL_LABEL_LINE:
+		printf("line is a local label\n");
 		return NULL;		/* Call parse_label_line */
 	case GLOBAL_LABEL_LINE:
+		printf("line is global label\n");
 		return NULL;		/* Call parse_global_line */
 	case DIRECTIVE_LINE:
+		printf("line is directive line\n");
 		return NULL;		/* Call parse_directive_line */
 	default:
 		handle_error("An invalid or unknown type of line was found in parse_line func", WARNING);
@@ -85,7 +87,7 @@ static struct ast_node *parse_line(struct token_iterator *ti)
 	};
 }
 
-struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf)
+struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf, struct token *root_tok)
 {
 	if (!arena || !f_buf)
 		handle_error("pointers passed to parse_program are NULL", FATAL);
@@ -95,7 +97,7 @@ struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf)
 
 	struct token_iterator ti;
 	ti_init(&ti, arena, f_buf);
-	ti.cur_tok = get_next_token(ti.arena, ti.f_buf, ti.cur_tok);
+	ti.cur_tok = root_tok;
 
 	while (1) {
 		struct ast_node *node = parse_line(&ti);

@@ -4,6 +4,7 @@
 #include "include/tokenizer/structs/token.h"
 #include "libs/tiltyard/include/tiltyard_API.h"
 #include "include/tokenizer/header/tokenizer.h"
+#include "include/parser/header/parser.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +23,8 @@ int main(int argc, char *argv[])
 		handle_error("root_tok is null", WARNING);
 		return 1;
 	}
+
+	parse_program(arena, file_buf, root_tok);
 
 	return 0;
 }
