@@ -17,7 +17,7 @@ struct instruction {
 		struct reg reg;
 	} operands[INSTRUCTION_MAX_ARG_C];
 
-	enum mnemonic_t mnemonic;
+	enum token_t mnemonic;
 	size_t operand_c;
 	
 };

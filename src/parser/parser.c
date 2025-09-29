@@ -46,7 +46,6 @@ static enum line_t identify_line_t(struct token_iterator *ti)
 	const enum token_t cur_tok_t = cur_tok->type;
 	const enum token_t next_tok_t = (next_tok) ? next_tok->type : UNKNOWN;
 
-
 	if (is_line_instruction(cur_tok_t))
 		return INSTRUCTION_LINE;
 	else if (is_line_directive(cur_tok_t))

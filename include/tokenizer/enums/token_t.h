@@ -49,6 +49,8 @@ enum token_t {
 	LOCAL_LABEL,		/* 31 */
 	GLOBAL_LABEL,		/* 32 */
 	LABEL_BEG,		/* 33 */
+	REG_SIZE_SPECIFIER = LABEL_BEG,
+
 	ARG_SEPARATOR,		/* 34 */
 
 	BIN_OP_START,		/* 35 */
