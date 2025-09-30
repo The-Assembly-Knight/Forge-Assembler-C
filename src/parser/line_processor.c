@@ -1,6 +1,7 @@
 #include "../../include/parser/header/line_processor.h"
 #include "../../include/error/handle_error.h"
 #include <stdbool.h>
+#include <stddef.h>
 
 static bool is_tok_instruction(const enum token_t tok_t)
 {
@@ -66,10 +67,79 @@ static bool get_reg_size(struct token *reg_tok)
 	return UNKNOWN_S;
 }
 
+static inline void increase_instr_op_c(size_t *c)
+{
+	if (!c)
+		handle_error("the counter pointer passed to inscrease_instr_op_c is NULL", FATAL);
+	(*c)++;
+}
+
+static void handle_reg_arg(struct token **tok, struct reg *reg)
+{
+	if (!tok || !(*tok) || !reg)
+		handle_error("one of the pointer passed to handle_reg_arg is NULL", FATAL);
+
+	reg->type = (*tok)->type;
+	reg->size = get_reg_size(*tok);
+					
+	consume_token(tok);
+	if (reg->size != UNKNOWN_S) {
+		consume_token(tok);
+		consume_token(tok);
+	}
+
+}
+
+static void handle_id_arg(struct token **tok, struct identifier *id)
+{
+	if (!tok || !(*tok) || !id)
+		handle_error("One of the pointers passed to handle_id_arg is NULL", FATAL);
+}
+
+static void parse_instr_line_args(struct token **tok, struct instruction *node)
+{
+	static const size_t MAX_INSTRUCTION_ARG_C = 4;
+
+	if (!tok)
+		handle_error("tok pointer passed to parse_instr_line_args is NULL", FATAL);
+	
+	size_t *op_c = &node->operand_c;
+	enum token_t cur_tok_t = (*tok)->type;
+	bool expecting_arg = true;
+
+	while (cur_tok_t != LINE_END) {
+		if ((expecting_arg && is_arg_register(cur_tok_t)) ||
+		    (expecting_arg && is_arg_identifier(cur_tok_t))) {		
+			expecting_arg = false;
+
+			if (is_arg_identifier(cur_tok_t)) {
+				struct identifier *id = &node->operands[*op_c].id; 
+				node->operands_t[*op_c] = ID;
+				handle_id_arg(tok, id);
+			} else {
+				struct reg *reg = &node->operands[*op_c].reg;
+				node->operands_t[*op_c] = REG;
+				handle_reg_arg(tok, reg);
+			}
+			increase_instr_op_c(op_c);
+		} else {
+			if (expecting_arg)
+				handle_error("received something that was not an argument when an argument was expected", FATAL);
+
+			if (*op_c == MAX_INSTRUCTION_ARG_C)
+				handle_error("instruction received more than 4 arguments", FATAL);
+
+			if (cur_tok_t != ARG_SEPARATOR)
+				handle_error("arguments are being separated by something that is not an ','", FATAL);
+
+			expecting_arg = true;
+		}
+		update_token_t(&cur_tok_t, *tok);
+	}
+}
 
 bool process_instruction_line(struct ast_node *node, struct token *tok)
 {
-	const size_t MAX_INSTRUCTION_ARG_C = 4;
 
 	enum token_t cur_tok_t = tok->type;
 	
@@ -86,50 +156,7 @@ bool process_instruction_line(struct ast_node *node, struct token *tok)
 	bool expecting_arg = true;
 
 	size_t *instruction_op_c = &instruction_node->operand_c;
-	while (cur_tok_t != LINE_END) {
-		if (expecting_arg) {
-			enum op_t *arg_t = &instruction_node->operands_t[*instruction_op_c];
-			if (is_arg_register(cur_tok_t)) {
-				expecting_arg = false;
-				struct reg *reg = &instruction_node->operands[*instruction_op_c].reg;
-
-				(*instruction_op_c)++;
-				*arg_t = REG;
-				reg->type = cur_tok_t;
-				reg->size = get_reg_size(tok);
-					
-				consume_token(&tok);
-				if (reg->size != UNKNOWN_S) {
-					consume_token(&tok);
-					consume_token(&tok);
-				}
-
-			} else if (is_arg_identifier(cur_tok_t)) {
-				expecting_arg = false;
-				struct identifier *id = &instruction_node->operands[*instruction_op_c].id;
-
-				(*instruction_op_c)++;
-				*arg_t = ID;			
-			} else {
-				handle_error("an instruction has one or more arguments that are neither identifiers nor registers", WARNING);
-				return false;
-			}
-		} else {
-			if (*instruction_op_c == MAX_INSTRUCTION_ARG_C) {
-				handle_error("an instruction has over 4 arguments", WARNING);
-				return false;
-			}
-
-			if (cur_tok_t != ARG_SEPARATOR) {
-				handle_error("instruction arguments are not being separated by ','", WARNING);
-				return false;
-			}
-
-			expecting_arg = true;
-			consume_token(&tok);
-		}
-		update_token_t(&cur_tok_t, tok);
-	}
+	parse_instr_line_args(&tok, instruction_node);
 
 	return true;
 }
