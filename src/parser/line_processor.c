@@ -96,6 +96,15 @@ static void handle_id_op(struct token **tok, struct identifier *id)
 		handle_error("One of the pointers passed to handle_id_op is NULL", FATAL);
 }
 
+static void parse_instr_line_mnemonic(struct token **tok, struct instruction *node)
+{
+	if (!tok || !(*tok) || !node)
+		handle_error("One of the pointers passed to parse_instr_line_mnemonic is NULL", FATAL);
+
+	node->mnemonic = (*tok)->type;
+	consume_token(tok);
+}
+
 static void parse_instr_line_ops(struct token **tok, struct instruction *node)
 {
 	static const size_t MAX_INSTRUCTION_ARG_C = 4;
@@ -140,22 +149,18 @@ static void parse_instr_line_ops(struct token **tok, struct instruction *node)
 
 bool process_instruction_line(struct ast_node *node, struct token *tok)
 {
-
 	enum token_t cur_tok_t = tok->type;
 	
-	if (!(is_tok_instruction(cur_tok_t)))
+	if (is_tok_instruction(cur_tok_t)) {
+		node->ast_node_t = INSTRUCTION_NODE;
+	} else {
 		return false;
+	}
 
-	node->ast_node_t = INSTRUCTION_NODE;
 	struct instruction *instruction_node = &node->node.instr;
 	init_instruction_node(&node->node.instr);
-	instruction_node->mnemonic = cur_tok_t;
-	
-	consume_and_update(&tok, &cur_tok_t);
 
-	bool expecting_op = true;
-
-	size_t *instruction_op_c = &instruction_node->operand_c;
+	parse_instr_line_mnemonic(&tok, instruction_node);
 	parse_instr_line_ops(&tok, instruction_node);
 
 	return true;

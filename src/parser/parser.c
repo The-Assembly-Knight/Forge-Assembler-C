@@ -58,7 +58,7 @@ static enum line_t identify_line_t(struct token_iterator *ti)
 	return UNKNOWN_LINE;
 }
 
-static struct ast_node *parse_line(struct token_iterator *ti)
+static struct ast_node *parse_line(struct file_buf *f_buf, struct token_iterator *ti)
 {
 	struct ast_node *cur_node = tiltyard_calloc(ti->arena, sizeof(*cur_node));
 
@@ -99,7 +99,7 @@ struct ast_node *parse_program(Arena *arena, struct file_buf *f_buf, struct toke
 	ti.cur_tok = root_tok;
 
 	while (1) {
-		struct ast_node *node = parse_line(&ti);
+		struct ast_node *node = parse_line(f_buf, &ti);
 
 		if (!node) break;
 
