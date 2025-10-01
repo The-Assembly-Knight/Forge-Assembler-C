@@ -1,7 +1,9 @@
-#include "../../include/parser/header/line_processor.h"
-#include "../../include/error/handle_error.h"
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
+
+#include "../../include/parser/header/line_processor.h"
+#include "../../include/error/handle_error.h"
 
 static bool is_tok_instruction(const enum token_t tok_t)
 {
@@ -90,10 +92,18 @@ static void handle_reg_op(struct token **tok, struct reg *reg)
 
 }
 
-static void handle_id_op(struct token **tok, struct identifier *id)
+static void handle_id_op(struct token **tok, struct identifier *id, struct file_buf *f_buf)
 {
-	if (!tok || !(*tok) || !id)
+	if (!tok || !(*tok) || !id || !f_buf)
 		handle_error("One of the pointers passed to handle_id_op is NULL", FATAL);
+	
+	if ((*tok)->type != IDENTIFIER)
+		handle_error("A token that is not an identifier was passed to handle_id_op", WARNING);
+
+	strncpy(id->name, f_buf->buf + (*tok)->start_off, (*tok)->len);
+	id->name[(*tok)->start_off] = '\0';
+
+	consume_token(tok);
 }
 
 static void parse_instr_line_mnemonic(struct token **tok, struct instruction *node)
@@ -105,7 +115,7 @@ static void parse_instr_line_mnemonic(struct token **tok, struct instruction *no
 	consume_token(tok);
 }
 
-static void parse_instr_line_ops(struct token **tok, struct instruction *node)
+static void parse_instr_line_ops(struct token **tok, struct instruction *node, struct file_buf *f_buf)
 {
 	static const size_t MAX_INSTRUCTION_ARG_C = 4;
 
@@ -124,7 +134,7 @@ static void parse_instr_line_ops(struct token **tok, struct instruction *node)
 			if (is_op_identifier(cur_tok_t)) {
 				struct identifier *id = &node->operands[*op_c].id; 
 				node->operands_t[*op_c] = ID;
-				handle_id_op(tok, id);
+				handle_id_op(tok, id, f_buf);
 			} else {
 				struct reg *reg = &node->operands[*op_c].reg;
 				node->operands_t[*op_c] = REG;
@@ -147,7 +157,7 @@ static void parse_instr_line_ops(struct token **tok, struct instruction *node)
 	}
 }
 
-bool process_instruction_line(struct ast_node *node, struct token *tok)
+bool process_instruction_line(struct ast_node *node, struct token *tok, struct file_buf *f_buf)
 {
 	enum token_t cur_tok_t = tok->type;
 	
@@ -161,7 +171,7 @@ bool process_instruction_line(struct ast_node *node, struct token *tok)
 	init_instruction_node(&node->node.instr);
 
 	parse_instr_line_mnemonic(&tok, instruction_node);
-	parse_instr_line_ops(&tok, instruction_node);
+	parse_instr_line_ops(&tok, instruction_node, f_buf);
 
 	return true;
 }
