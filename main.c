@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		handle_error("A path for the file must be specified", FATAL);
 
-	Arena *arena = tiltyard_create(1000); 
+	Arena *arena = tiltyard_create(10000); 
 	if (!arena)
 		handle_error("Arena with the specified size could not be created", FATAL);
 

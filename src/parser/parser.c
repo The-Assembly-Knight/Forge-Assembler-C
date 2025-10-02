@@ -4,6 +4,7 @@
 #include "../../include/parser/header/parser.h"
 #include "../../include/error/handle_error.h"
 #include "../../include/parser/header/line_type_identifier.h"
+#include "../../include/parser/header/line_processor.h"
 
 struct token_iterator {
 	Arena *arena;
@@ -70,6 +71,7 @@ static struct ast_node *parse_line(struct file_buf *f_buf, struct token_iterator
 	switch (line_t) {
 	case INSTRUCTION_LINE:
 		printf("line is an instruction\n");
+		process_instruction_line(cur_node, ti->cur_tok, f_buf);
 		return NULL;		/* Call parse_instruction_line */
 	case LOCAL_LABEL_LINE:
 		printf("line is a local label\n");

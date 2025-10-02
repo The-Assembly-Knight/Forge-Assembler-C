@@ -47,12 +47,6 @@ static void update_token_t(enum token_t *tok_t, struct token *tok)
 	*tok_t = tok->type;
 }
 
-static void consume_and_update(struct token **tok, enum token_t *tok_t)
-{
-	consume_token(tok);
-	update_token_t(tok_t, *tok);
-}
-
 static bool get_reg_size(struct token *reg_tok)
 {
 	if (!reg_tok)
@@ -67,13 +61,6 @@ static bool get_reg_size(struct token *reg_tok)
 		return UNKNOWN_S;
 
 	return UNKNOWN_S;
-}
-
-static inline void increase_instr_op_c(size_t *c)
-{
-	if (!c)
-		handle_error("the counter pointer passed to inscrease_instr_op_c is NULL", FATAL);
-	(*c)++;
 }
 
 static void handle_reg_op(struct token **tok, struct reg *reg)
@@ -100,6 +87,9 @@ static void handle_id_op(struct token **tok, struct identifier *id, struct file_
 	if ((*tok)->type != IDENTIFIER)
 		handle_error("A token that is not an identifier was passed to handle_id_op", WARNING);
 
+	if ((*tok)->len > MAX_IDENTIFIER_LEN)
+		handle_error("Identifier surpasses MAX_IDENTIFIER_LEN", FATAL);
+	
 	strncpy(id->name, f_buf->buf + (*tok)->start_off, (*tok)->len);
 	id->name[(*tok)->start_off] = '\0';
 
@@ -140,7 +130,7 @@ static void parse_instr_line_ops(struct token **tok, struct instruction *node, s
 				node->operands_t[*op_c] = REG;
 				handle_reg_op(tok, reg);
 			}
-			increase_instr_op_c(op_c);
+			(*op_c)++;
 		} else {
 			if (expecting_op)
 				handle_error("received something that was not an operator when an operator was expected", FATAL);
@@ -151,6 +141,7 @@ static void parse_instr_line_ops(struct token **tok, struct instruction *node, s
 			if (cur_tok_t != ARG_SEPARATOR)
 				handle_error("operators are being separated by something that is not an ','", FATAL);
 
+			consume_token(tok);
 			expecting_op = true;
 		}
 		update_token_t(&cur_tok_t, *tok);
@@ -166,6 +157,7 @@ bool process_instruction_line(struct ast_node *node, struct token *tok, struct f
 	} else {
 		return false;
 	}
+
 
 	struct instruction *instruction_node = &node->node.instr;
 	init_instruction_node(&node->node.instr);
