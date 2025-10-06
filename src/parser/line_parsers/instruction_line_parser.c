@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "../../include/parser/header/line_processor.h"
-#include "../../include/error/handle_error.h"
+#include "../../../include/parser/header/line_parsers/instruction_line_parser.h"
+#include "../../../include/error/handle_error.h"
 
 static bool is_tok_instruction(const enum token_t tok_t)
 {

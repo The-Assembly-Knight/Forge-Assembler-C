@@ -4,7 +4,7 @@
 #include "../../include/parser/header/parser.h"
 #include "../../include/error/handle_error.h"
 #include "../../include/parser/header/line_type_identifier.h"
-#include "../../include/parser/header/line_processor.h"
+#include "../../include/parser/header/line_parsers/instruction_line_parser.h"
 
 struct token_iterator {
 	Arena *arena;
@@ -12,14 +12,6 @@ struct token_iterator {
 	struct token *cur_tok;
 };
 
-enum line_t {
-	UNKNOWN_LINE,
-	INSTRUCTION_LINE,
-	LOCAL_LABEL_LINE,
-	GLOBAL_LABEL_LINE,
-	DIRECTIVE_LINE,
-	INVALID_LINE,
-};
 
 static struct token *peek_next_token(struct token *tok)
 {
@@ -36,29 +28,6 @@ static void ti_init(struct token_iterator *ti, Arena *arena, struct file_buf *f_
 	ti->cur_tok = NULL;
 }
 
-static enum line_t identify_line_t(struct token_iterator *ti)
-{
-	if (!ti)
-		handle_error("token iterator pointer passed to dientify_first_tok_t is NULL", FATAL);
-	
-	struct token *cur_tok = ti->cur_tok;
-	struct token *next_tok = peek_next_token(cur_tok);
-
-	const enum token_t cur_tok_t = cur_tok->type;
-	const enum token_t next_tok_t = (next_tok) ? next_tok->type : UNKNOWN;
-
-	if (is_line_instruction(cur_tok_t))
-		return INSTRUCTION_LINE;
-	else if (is_line_directive(cur_tok_t))
-		return DIRECTIVE_LINE;
-	else if (is_line_local_label(cur_tok_t, next_tok_t))
-		return LOCAL_LABEL_LINE;
-	else if (is_line_global_label(cur_tok_t, next_tok_t))
-		return GLOBAL_LABEL_LINE;
-	
-	return UNKNOWN_LINE;
-}
-
 static struct ast_node *parse_line(struct file_buf *f_buf, struct token_iterator *ti)
 {
 	struct ast_node *cur_node = tiltyard_calloc(ti->arena, sizeof(*cur_node));
@@ -72,7 +41,7 @@ static struct ast_node *parse_line(struct file_buf *f_buf, struct token_iterator
 	case INSTRUCTION_LINE:
 		printf("line is an instruction\n");
 		process_instruction_line(cur_node, ti->cur_tok, f_buf);
-		return NULL;		/* Call parse_instruction_line */
+		return cur_node;		/* Call parse_instruction_line */
 	case LOCAL_LABEL_LINE:
 		printf("line is a local label\n");
 		return NULL;		/* Call parse_label_line */
